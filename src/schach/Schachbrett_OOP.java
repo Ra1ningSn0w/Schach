@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -24,6 +25,12 @@ public class Schachbrett_OOP
 	boolean turm_a_white_moved = false;
 	boolean turm_b_white_moved = false;
 	boolean king_white_moved = false;
+	
+	int en_passant_x = -1;
+	int en_passant_y = -1;
+	
+	int timer_white = 900;
+	int timer_black = 900;
 	
 	List<String> geschlagen = new LinkedList();
 	
@@ -165,6 +172,12 @@ public class Schachbrett_OOP
 	
 	public void zug(int x1, int y1, int x2, int y2)
 	{
+		if(isBlackTurn && timer_black <= 0)
+			return;
+		
+		if(!isBlackTurn && timer_white <= 0)
+			return;
+		
 		if(brett[x1][y1].isValid(brett[x2][y2], false) && brett[x1][y1].isBlack() == isBlackTurn)
 		{
 			//Bauer durch
@@ -199,6 +212,40 @@ public class Schachbrett_OOP
 				
 			isBlackTurn = !isBlackTurn;
 		}
+		//En Passant
+		else if(brett[x1][y1].isBlack() && en_passant_x != -1 && en_passant_y != -1 && brett[x1][y1].getX() == en_passant_x && brett[x2][y2].getY() == en_passant_y && (brett[x1][y1].getX() - brett[x2][y2].getX()) == -1 && brett[x2][y2] instanceof Dummy && brett[x1][y1] instanceof Bauer)
+		{
+			brett[x2][y2] = brett[x1][y1];
+			brett[x2][y2].setX(x2);
+			brett[x2][y2].setY(y2);
+			brett[x1][y1] = new Dummy(x1, y1, this);
+			
+			geschlagen.add("Bauer " + (brett[en_passant_x][en_passant_y].isBlack() ? "Schwarz" : "Weiß"));
+			
+			brett[en_passant_x][en_passant_y] = new Dummy(en_passant_x, en_passant_y, this);
+			
+			en_passant_x = -1;
+			en_passant_y = -1;
+			
+			isBlackTurn = !isBlackTurn;
+		}
+		else if(!brett[x1][y1].isBlack() && en_passant_x != -1 && en_passant_y != -1 && brett[x1][y1].getX() == en_passant_x && brett[x2][y2].getY() == en_passant_y && (brett[x1][y1].getX() - brett[x2][y2].getX()) == 1 && brett[x2][y2] instanceof Dummy && brett[x1][y1] instanceof Bauer)
+		{
+			brett[x2][y2] = brett[x1][y1];
+			brett[x2][y2].setX(x2);
+			brett[x2][y2].setY(y2);
+			brett[x1][y1] = new Dummy(x1, y1, this);
+			
+			geschlagen.add("Bauer " + (brett[en_passant_x][en_passant_y].isBlack() ? "Schwarz" : "Weiß"));
+			
+			brett[en_passant_x][en_passant_y] = new Dummy(en_passant_x, en_passant_y, this);
+			
+			en_passant_x = -1;
+			en_passant_y = -1;
+			
+			isBlackTurn = !isBlackTurn;
+		}
+		
 		//Rochade
 		else if(!isSchach(brett[x1][y1].isBlack()))
 		{
@@ -266,10 +313,10 @@ public class Schachbrett_OOP
 	
 	private void setzeFigur(int x1, int y1, int x2, int y2)
 	{
-		if(brett[x2][y2] instanceof Dummy == false)
+		Figur f = brett[x2][y2];
+		
+		if(f instanceof Dummy == false)
 		{
-			Figur f = brett[x2][y2];
-			
 			if(f instanceof Bauer)
 				geschlagen.add("Bauer " + (f.isBlack() ? "Schwarz" : "Weiß"));
 			else if(f instanceof Turm)
@@ -286,6 +333,75 @@ public class Schachbrett_OOP
 		brett[x2][y2].setX(x2);
 		brett[x2][y2].setY(y2);
 		brett[x1][y1] = new Dummy(x1, y1, this);
+		
+		check_en_passant(x1, y1, x2, y2);
+	}
+	
+	private void check_en_passant(int x1, int y1, int x2, int y2)
+	{
+		Figur f = brett[x2][y2];
+		
+		if(f instanceof Bauer && f.isBlack() && x1 == 1 && x2 == 3)
+		{
+			if(y2 == 0 && brett[3][1] instanceof Bauer && brett[3][1].isBlack() != f.isBlack())
+			{
+				en_passant_x = x2;
+				en_passant_y = y2;
+			}
+			else if(y2 == 7 && brett[3][6] instanceof Bauer && brett[3][6].isBlack() != f.isBlack())
+			{
+				en_passant_x = x2;
+				en_passant_y = y2;
+			}
+			else if(brett[x2][y2+1] instanceof Bauer && brett[x2][y2+1].isBlack() != f.isBlack())
+			{
+				en_passant_x = x2;
+				en_passant_y = y2;
+			}
+			else if(brett[x2][y2-1] instanceof Bauer && brett[x2][y2-1].isBlack() != f.isBlack())
+			{
+				en_passant_x = x2;
+				en_passant_y = y2;
+			}
+			else
+			{
+				en_passant_x = -1;
+				en_passant_y = -1;
+			}
+		}
+		else if(f instanceof Bauer && !f.isBlack() && x1 == 6 && x2 == 4)
+		{
+			if(y2 == 0 && brett[4][1] instanceof Bauer && brett[4][1].isBlack() != f.isBlack())
+			{
+				en_passant_x = x2;
+				en_passant_y = y2;
+			}
+			else if(y2 == 7 && brett[4][6] instanceof Bauer && brett[4][6].isBlack() != f.isBlack())
+			{
+				en_passant_x = x2;
+				en_passant_y = y2;
+			}
+			else if(brett[x2][y2+1] instanceof Bauer && brett[x2][y2+1].isBlack() != f.isBlack())
+			{
+				en_passant_x = x2;
+				en_passant_y = y2;
+			}
+			else if(brett[x2][y2-1] instanceof Bauer && brett[x2][y2-1].isBlack() != f.isBlack())
+			{
+				en_passant_x = x2;
+				en_passant_y = y2;
+			}
+			else
+			{
+				en_passant_x = -1;
+				en_passant_y = -1;
+			}
+		}
+		else
+		{
+			en_passant_x = -1;
+			en_passant_y = -1;
+		}
 	}
 	
 	public boolean isBlackTurn()
@@ -345,5 +461,51 @@ public class Schachbrett_OOP
 		this.isBlackTurn = isBlackTurn;
 	}
 	
+	public int getTimer_white() {
+		return timer_white;
+	}
+
+	public int getTimer_black() {
+		return timer_black;
+	}
+
+	public void setTimer_white(int timer_white) {
+		this.timer_white = timer_white;
+	}
+
+	public void setTimer_black(int timer_black) {
+		this.timer_black = timer_black;
+	}
 	
+	public int getEn_passant_x() {
+		return en_passant_x;
+	}
+
+	public void setEn_passant_x(int en_passant_x) {
+		this.en_passant_x = en_passant_x;
+	}
+
+	public int getEn_passant_y() {
+		return en_passant_y;
+	}
+
+	public void setEn_passant_y(int en_passant_y) {
+		this.en_passant_y = en_passant_y;
+	}
+
+	public void tick()
+	{
+		if(isBlackTurn && timer_black > 0)
+			timer_black--;
+		else if(timer_white > 0)
+			timer_white--;
+	}
+	
+	public Duration getTimer()
+	{
+		if(isBlackTurn)
+			return Duration.ofSeconds(timer_black);
+		else
+			return Duration.ofSeconds(timer_white);
+	}
 }

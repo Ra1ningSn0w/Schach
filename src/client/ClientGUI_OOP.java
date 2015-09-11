@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
 import java.awt.Font;
@@ -70,6 +72,7 @@ public class ClientGUI_OOP extends JFrame {
 	
 	private JLabel zug, schach;
 	private JTextArea textArea;
+	private JLabel lblZeit;
 	
 	int fromx = -1, fromy = -1;
 
@@ -790,6 +793,8 @@ public class ClientGUI_OOP extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				brett = new Schachbrett_OOP();
 				update();
+				update_time();
+				resetColors();
 			}
 		});
 		btnReset.setBounds(490, 420, 291, 45);
@@ -797,11 +802,11 @@ public class ClientGUI_OOP extends JFrame {
 		
 		JLabel lblGeschlagen = new JLabel("Geschlagen:");
 		lblGeschlagen.setFont(new Font("Tahoma", Font.BOLD, 22));
-		lblGeschlagen.setBounds(490, 130, 291, 45);
+		lblGeschlagen.setBounds(490, 188, 291, 45);
 		contentPane.add(lblGeschlagen);
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(490, 188, 291, 219);
+		scrollPane.setBounds(490, 246, 291, 161);
 		contentPane.add(scrollPane);
 		
 		textArea = new JTextArea();
@@ -809,6 +814,11 @@ public class ClientGUI_OOP extends JFrame {
 		textArea.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		textArea.setEditable(false);
 		scrollPane.setViewportView(textArea);
+		
+		lblZeit = new JLabel("Zeit:");
+		lblZeit.setFont(new Font("Tahoma", Font.BOLD, 22));
+		lblZeit.setBounds(490, 130, 291, 45);
+		contentPane.add(lblZeit);
 		
 		try
 		{
@@ -858,15 +868,66 @@ public class ClientGUI_OOP extends JFrame {
 		
 		update();
 		resetColors();
+		
+		Timer update_timer = new Timer();
+		update_timer.schedule(new TimerTask()
+				{
+					@Override
+					public void run()
+					{
+						update_time();
+					}
+				}, 0, 100);
+		
+		Timer tick_timer = new Timer();
+		tick_timer.schedule(new TimerTask()
+				{
+					@Override
+					public void run()
+					{
+						brett.tick();
+					}
+				}, 0, 1000);
+	}
+	
+	private void update_time()
+	{
+		String minutes = String.format("%02d", brett.getTimer().toMinutes());
+		String seconds = String.format("%02d", brett.getTimer().getSeconds() - brett.getTimer().toMinutes()*60);
+		lblZeit.setText("Zeit: " + minutes + ":" + seconds);
+		
+		if(brett.isBlackTurn() && brett.getTimer_black() <= 0)
+		{
+			schach.setText("Schwarz timeout");
+			return;
+		}
+		
+		if(!brett.isBlackTurn() && brett.getTimer_white() <= 0)
+		{
+			schach.setText("Weiß timeout");
+			return;
+		}
 	}
 	
 	private void handle(int x, int y)
 	{
 		resetColors();
 		
+		if(brett.isBlackTurn() && brett.getTimer_black() <= 0)
+		{
+			schach.setText("Schwarz timeout");
+			return;
+		}
+		
+		if(!brett.isBlackTurn() && brett.getTimer_white() <= 0)
+		{
+			schach.setText("Weiß timeout");
+			return;
+		}
+		
 		if(fromx == -1 && fromy == -1)
 		{
-			if(brett.getBrett()[x][y].isBlack() == brett.isBlackTurn())
+			if(brett.getBrett()[x][y].isBlack() == brett.isBlackTurn() == brett.getBrett()[x][y] instanceof Dummy == false)
 			{
 				fromx = x;
 				fromy = y;
@@ -906,6 +967,13 @@ public class ClientGUI_OOP extends JFrame {
 		for(Zug z : zuege)
 		{
 			setColor(z.getFeld2().getX(), z.getFeld2().getY(), Color.CYAN);
+		}
+		
+		List<Zug> schlaege = brett.getBrett()[fromx][fromy].moeglicheSchlaege();
+		
+		for(Zug z : schlaege)
+		{
+			setColor(z.getFeld2().getX(), z.getFeld2().getY(), Color.RED);
 		}
 	}
 	

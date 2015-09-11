@@ -82,4 +82,24 @@ public abstract class Figur
 		
 		return ret;
 	}
+	
+	public List<Zug> moeglicheSchlaege()
+	{
+		List<Zug> ret = new LinkedList();
+		
+		for(Figur[] a : brett.getBrett())
+		{
+			for(Figur b : a)
+			{
+				if(isValid(b, false) && (b.isBlack() != black) && (b instanceof Dummy == false))
+					ret.add(new Zug(this, b));				
+				else if(black && brett.getEn_passant_x() != -1 && brett.getEn_passant_y() != -1 && x == brett.getEn_passant_x() && b.getY() == brett.getEn_passant_y() && (x - b.getX()) == -1 && b instanceof Dummy && this instanceof Bauer)
+					ret.add(new Zug(this, b));
+				else if(!black && brett.getEn_passant_x() != -1 && brett.getEn_passant_y() != -1 && x == brett.getEn_passant_x() && b.getY() == brett.getEn_passant_y() && (x - b.getX() == 1) && b instanceof Dummy && this instanceof Bauer)
+					ret.add(new Zug(this, b));
+			}
+		}
+		
+		return ret;
+	}
 }

@@ -67,6 +67,22 @@ public class XMLWriter
 			Element king_white = doc.createElement("king_white");
 			king_white.appendChild(doc.createTextNode(brett.isKing_white_moved() ? "true" : "false"));
 			rootElement.appendChild(king_white);
+			
+			Element timer_black = doc.createElement("timer_black");
+			timer_black.appendChild(doc.createTextNode(String.valueOf(brett.getTimer_black())));
+			rootElement.appendChild(timer_black);
+			
+			Element timer_white = doc.createElement("timer_white");
+			timer_white.appendChild(doc.createTextNode(String.valueOf(brett.getTimer_white())));
+			rootElement.appendChild(timer_white);
+			
+			Element en_passant_x = doc.createElement("en_passant_x");
+			en_passant_x.appendChild(doc.createTextNode(String.valueOf(brett.getEn_passant_x())));
+			rootElement.appendChild(en_passant_x);
+			
+			Element en_passant_y = doc.createElement("en_passant_y");
+			en_passant_y.appendChild(doc.createTextNode(String.valueOf(brett.getEn_passant_y())));
+			rootElement.appendChild(en_passant_y);
 
 			int counter = 0;
 			

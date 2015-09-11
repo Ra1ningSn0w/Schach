@@ -85,9 +85,6 @@ public class Koenig extends Figur
 									{	
 										if(!brett.mayBeSchach(fig1, fig2))
 										{
-											/*System.out.println("Lösung, um aus Schach zu kommen: ");
-											System.out.println("[" + fig1.getX() + ", " + fig1.getY() + "]");
-											System.out.println("[" + fig2.getX() + ", " + fig2.getY() + "]");*/
 											ret = false;
 										}
 									}

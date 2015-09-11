@@ -62,6 +62,18 @@ public class XMLReader
 			nList = doc.getElementsByTagName("king_white");
 			brett.setKing_white_moved((nList.item(0).getTextContent().equals("true")));
 			
+			nList = doc.getElementsByTagName("timer_black");
+			brett.setTimer_black(Integer.parseInt(nList.item(0).getTextContent()));
+			
+			nList = doc.getElementsByTagName("timer_white");
+			brett.setTimer_white(Integer.parseInt(nList.item(0).getTextContent()));
+			
+			nList = doc.getElementsByTagName("en_passant_x");
+			brett.setEn_passant_x(Integer.parseInt(nList.item(0).getTextContent()));
+			
+			nList = doc.getElementsByTagName("en_passant_y");
+			brett.setEn_passant_y(Integer.parseInt(nList.item(0).getTextContent()));
+			
 			nList = doc.getElementsByTagName("geschlagen");
 			
 			for(int i = 0; i < nList.getLength(); i++)
