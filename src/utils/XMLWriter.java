@@ -145,6 +145,9 @@ public class XMLWriter
 			
 			if(chooser.getSelectedFile() != null)
 			{			
+				if(!chooser.getSelectedFile().getName().endsWith(".xml"))
+					chooser.setSelectedFile(new File(chooser.getSelectedFile().getAbsolutePath() + ".xml"));
+				
 				TransformerFactory transformerFactory = TransformerFactory.newInstance();
 				Transformer transformer = transformerFactory.newTransformer();
 				DOMSource source = new DOMSource(doc);
